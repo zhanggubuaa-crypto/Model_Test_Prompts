@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List - タスクマネージャー</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .add-btn {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .add-btn:hover {
+            background: #5a6fd6;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-btn:hover:not(.active) {
+            border-color: #667eea;
+        }
+
+        .task-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+
+        .task-item:hover {
+            background: #f0f1f3;
+        }
+
+        .task-item .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 1rem;
+            color: #333;
+            word-break: break-word;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .task-item .edit-btn {
+            padding: 6px 12px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        .task-item .delete-btn {
+            padding: 6px 12px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .task-item .delete-btn:hover {
+            background: #d32f2f;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .task-count {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .clear-completed {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            color: #666;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .clear-completed:hover {
+            background: #e0e0e0;
+        }
+
+        .edit-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .edit-input:focus {
+            outline: none;
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .save-btn {
+            padding: 8px 16px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            padding: 8px 16px;
+            background: #999;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .footer {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Todo List</h1>
+        </div>
+        <div class="card">
+            <div class="input-area">
+                <input type="text" id="taskInput" placeholder="新しいタスクを入力..." />
+                <button class="add-btn" id="addBtn">追加</button>
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">すべて</button>
+                <button class="filter-btn" data-filter="active">未完了</button>
+                <button class="filter-btn" data-filter="completed">完了</button>
+            </div>
+
+            <ul class="task-list" id="taskList">
+            </ul>
+
+            <div class="empty-state" id="emptyState">
+                <p>タスクがありません</p>
+            </div>
+
+            <div class="footer">
+                <span class="task-count" id="taskCount">未完了: 0件</span>
+                <button class="clear-completed" id="clearCompleted">完了済みをすべて削除</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // タスクデータの管理
+        class TodoManager {
+            constructor() {
+                this.storageKey = 'todo_list_data';
+                this.tasks = this.loadTasks();
+                this.currentFilter = 'all';
+            }
+
+            // localStorageからタスクを読み込む
+            loadTasks() {
+                const stored = localStorage.getItem(this.storageKey);
+                if (stored) {
+                    try {
+                        return JSON.parse(stored);
+                    } catch (e) {
+                        console.error('データの読み込みに失敗しました:', e);
+                        return [];
+                    }
+                }
+                return [];
+            }
+
+            // タスクをlocalStorageに保存する
+            saveTasks() {
+                localStorage.setItem(this.storageKey, JSON.stringify(this.tasks));
+            }
+
+            // タスクを追加する
+            addTask(text) {
+                const task = {
+                    id: this.generateId(),
+                    text: text.trim(),
+                    done: false,
+                    createdAt: Date.now()
+                };
+                this.tasks.push(task);
+                this.saveTasks();
+                return task;
+            }
+
+            // タスクの完了状態を切り替える
+            toggleTask(id) {
+                const task = this.tasks.find(t => t.id === id);
+                if (task) {
+                    task.done = !task.done;
+                    this.saveTasks();
+                }
+            }
+
+            // タスクを削除する
+            deleteTask(id) {
+                this.tasks = this.tasks.filter(t => t.id !== id);
+                this.saveTasks();
+            }
+
+            // タスクを編集する
+            editTask(id, newText) {
+                const task = this.tasks.find(t => t.id === id);
+                if (task) {
+                    task.text = newText.trim();
+                    this.saveTasks();
+                }
+            }
+
+            // 完了済みタスクをすべて削除する
+            deleteCompletedTasks() {
+                this.tasks = this.tasks.filter(t => !t.done);
+                this.saveTasks();
+            }
+
+            // IDを生成する（一意性を担保）
+            generateId() {
+                const timestamp = Date.now().toString(36);
+                const random = Math.random().toString(36).substr(2, 9);
+                return `task_${timestamp}_${random}`;
+            }
+
+            // フィルターに基づいてタスクを取得する
+            getTasks() {
+                switch (this.currentFilter) {
+                    case 'active':
+                        return this.tasks.filter(t => !t.done);
+                    case 'completed':
+                        return this.tasks.filter(t => t.done);
+                    default:
+                        return this.tasks;
+                }
+            }
+
+            // 未完了タスクの数を取得する
+            getActiveCount() {
+                return this.tasks.filter(t => !t.done).length;
+            }
+
+            // 全タスク数を取得する
+            getAllCount() {
+                return this.tasks.length;
+            }
+        }
+
+        // UIの制御
+        class TodoUI {
+            constructor(todoManager) {
+                this.manager = todoManager;
+                this.taskList = document.getElementById('taskList');
+                this.emptyState = document.getElementById('emptyState');
+                this.taskCount = document.getElementById('taskCount');
+                this.taskInput = document.getElementById('taskInput');
+                this.addBtn = document.getElementById('addBtn');
+                this.filterBtns = document.querySelectorAll('.filter-btn');
+                this.clearCompletedBtn = document.getElementById('clearCompleted');
+                this.editingId = null;
+
+                this.initEventListeners();
+                this.render();
+            }
+
+            initEventListeners() {
+                // タスク追加（ボタンクリック）
+                this.addBtn.addEventListener('click', () => this.handleAddTask());
+
+                // タスク追加（Enterキー）
+                this.taskInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.handleAddTask();
+                    }
+                });
+
+                // フィルター切り替え
+                this.filterBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.setFilter(e.target.dataset.filter);
+                    });
+                });
+
+                // 完了済みタスクをすべて削除
+                this.clearCompletedBtn.addEventListener('click', () => {
+                    this.manager.deleteCompletedTasks();
+                    this.render();
+                    this.updateTaskCount();
+                });
+            }
+
+            handleAddTask() {
+                const text = this.taskInput.value.trim();
+                if (!text) return;
+
+                this.manager.addTask(text);
+                this.taskInput.value = '';
+                this.render();
+                this.updateTaskCount();
+            }
+
+            setFilter(filter) {
+                this.manager.currentFilter = filter;
+
+                // アクティブなボタンを更新
+                this.filterBtns.forEach(btn => {
+                    if (btn.dataset.filter === filter) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+
+                this.render();
+                this.updateTaskCount();
+            }
+
+            render() {
+                const tasks = this.manager.getTasks();
+                this.taskList.innerHTML = '';
+
+                if (tasks.length === 0) {
+                    this.emptyState.style.display = 'block';
+                } else {
+                    this.emptyState.style.display = 'none';
+                    tasks.forEach(task => {
+                        const li = this.createTaskElement(task);
+                        this.taskList.appendChild(li);
+                    });
+                }
+            }
+
+            createTaskElement(task) {
+                const li = document.createElement('li');
+                li.className = `task-item${task.done ? ' completed' : ''}`;
+                li.dataset.id = task.id;
+
+                if (task.id === this.editingId) {
+                    li.innerHTML = `
+                        <input type="text" class="edit-input" value="${task.text}" />
+                        <div class="edit-actions">
+                            <button class="save-btn">保存</button>
+                            <button class="cancel-btn">キャンセル</button>
+                        </div>
+                    `;
+
+                    const saveBtn = li.querySelector('.save-btn');
+                    const cancelBtn = li.querySelector('.cancel-btn');
+                    const editInput = li.querySelector('.edit-input');
+
+                    // 保存ボタン
+                    saveBtn.addEventListener('click', () => {
+                        const newText = editInput.value.trim();
+                        if (newText) {
+                            this.manager.editTask(task.id, newText);
+                            this.editingId = null;
+                            this.render();
+                            this.updateTaskCount();
+                        }
+                    });
+
+                    // キャンセルボタン
+                    cancelBtn.addEventListener('click', () => {
+                        this.editingId = null;
+                        this.render();
+                    });
+
+                    // Enterキーで保存
+                    editInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            const newText = editInput.value.trim();
+                            if (newText) {
+                                this.manager.editTask(task.id, newText);
+                                this.editingId = null;
+                                this.render();
+                                this.updateTaskCount();
+                            }
+                        }
+                    });
+
+                    // インプットにフォーカス
+                    setTimeout(() => editInput.focus(), 0);
+
+                } else {
+                    li.innerHTML = `
+                        <input type="checkbox" class="checkbox" ${task.done ? 'checked' : ''} />
+                        <span class="task-text">${this.escapeHtml(task.text)}</span>
+                        <button class="edit-btn">編集</button>
+                        <button class="delete-btn">×</button>
+                    `;
+
+                    // チェックボックス
+                    li.querySelector('.checkbox').addEventListener('change', () => {
+                        this.manager.toggleTask(task.id);
+                        this.render();
+                        this.updateTaskCount();
+                    });
+
+                    // クリックで完了切り替え
+                    li.querySelector('.task-text').addEventListener('click', () => {
+                        this.manager.toggleTask(task.id);
+                        this.render();
+                        this.updateTaskCount();
+                    });
+
+                    // 編集ボタン
+                    li.querySelector('.edit-btn').addEventListener('click', () => {
+                        this.editingId = task.id;
+                        this.render();
+                    });
+
+                    // ダブルクリックで編集
+                    li.addEventListener('dblclick', () => {
+                        this.editingId = task.id;
+                        this.render();
+                    });
+
+                    // 削除ボタン
+                    li.querySelector('.delete-btn').addEventListener('click', () => {
+                        this.manager.deleteTask(task.id);
+                        this.render();
+                        this.updateTaskCount();
+                    });
+                }
+
+                return li;
+            }
+
+            updateTaskCount() {
+                const count = this.manager.getActiveCount();
+                this.taskCount.textContent = `未完了: ${count}件`;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // アプリケーションの初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            const todoManager = new TodoManager();
+            const todoUI = new TodoUI(todoManager);
+        });
+    </script>
+</body>
+</html>

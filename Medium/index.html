@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithm Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select {
+            background: #2d2d44;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        button {
+            background: #00d4ff;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        button:hover:not(:disabled) {
+            background: #00a8cc;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #ee5a5a;
+        }
+
+        .btn-success {
+            background: #51cf66;
+            color: #1a1a2e;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #40c057;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .algorithm-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .algorithm-info h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        .algorithm-info p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-item h4 {
+            color: #aaa;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-item .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .stat-item .value.comparing {
+            color: #ffd700;
+        }
+
+        .stat-item .value.swapping {
+            color: #ff6b6b;
+        }
+
+        .stat-item .value.sorted {
+            color: #51cf66;
+        }
+
+        .visualizer {
+            position: relative;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 20px 10px;
+        }
+
+        .bar-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            gap: 2px;
+        }
+
+        .bar {
+            flex: 1;
+            background: #6366f1;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.1s ease, background-color 0.1s ease;
+            position: relative;
+        }
+
+        .bar.comparing {
+            background: #ffd700;
+        }
+
+        .bar.swapping {
+            background: #ff6b6b;
+        }
+
+        .bar.sorted {
+            background: #51cf66;
+        }
+
+        .bar.pivot {
+            background: #d633d6;
+        }
+
+        .bar.min {
+            background: #00d4ff;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .loader.active {
+            display: block;
+        }
+
+        .loader::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 10px solid transparent;
+            border-bottom-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .loader-text {
+            color: #00d4ff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1> Sorting Algorithm Visualizer</h1>
+            <p>6つのアルゴリズムの動作をリアルタイムで確認</p>
+        </header>
+
+        <div class="algorithm-info">
+            <h3 id="algorithm-name">バブルソート (Bubble Sort)</h3>
+            <p id="algorithm-description">
+                隣り合う要素を比較し、大きいものを右に移動させる操作を繰り返すシンプルなアルゴリズム。<br>
+                時間計算量: O(n²) | 空間計算量: O(1)
+            </p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="algorithm-select">アルゴリズム</label>
+                <select id="algorithm-select">
+                    <option value="bubble">バブルソート (Bubble Sort)</option>
+                    <option value="selection">選択ソート (Selection Sort)</option>
+                    <option value="insertion">挿入ソート (Insertion Sort)</option>
+                    <option value="merge">マージソート (Merge Sort)</option>
+                    <option value="quick">クイックソート (Quick Sort)</option>
+                    <option value="heap">ヒープソート (Heap Sort)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="array-size">配列サイズ: <span id="array-size-value">100</span></label>
+                <input type="range" id="array-size" min="10" max="200" value="100" disabled>
+            </div>
+
+            <div class="control-group">
+                <label for="speed-select">アニメーション速度</label>
+                <select id="speed-select">
+                    <option value="0.001">非常に速い</option>
+                    <option value="0.01" selected>速い</option>
+                    <option value="0.1">普通</option>
+                    <option value="0.3">遅い</option>
+                    <option value="0.5">非常に遅い</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="array-pattern">配列パターン</label>
+                <select id="array-pattern">
+                    <option value="random">ランダム</option>
+                    <option value="sorted">ほぼソート済み</option>
+                    <option value="reversed">逆順</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>操作</label>
+                <div class="button-group">
+                    <button id="start-btn" class="btn-success">スタート</button>
+                    <button id="pause-btn" class="btn-secondary" disabled>一時停止</button>
+                    <button id="reset-btn">リセット</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <h4>比較回数</h4>
+                <div class="value" id="comparisons">0</div>
+            </div>
+            <div class="stat-item">
+                <h4>交換回数</h4>
+                <div class="value" id="swaps">0</div>
+            </div>
+            <div class="stat-item">
+                <h4>書込み回数</h4>
+                <div class="value" id="writes">0</div>
+            </div>
+            <div class="stat-item">
+                <h4>経過時間</h4>
+                <div class="value" id="time">0 ms</div>
+            </div>
+        </div>
+
+        <div class="visualizer">
+            <div class="bar-container" id="bar-container"></div>
+            <div class="loader" id="loader">
+                <div class="loader-text">ソート中...</div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #6366f1;"></div>
+                <span>通常</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffd700;"></div>
+                <span>比較中</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff6b6b;"></div>
+                <span>交換中</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #51cf66;"></div>
+                <span>確定済み</span>
+            </div>
+            <div class="legend-item" id="pivot-legend-item" style="display: none;">
+                <div class="legend-color" style="background: #d633d6;"></div>
+                <span>ピボット</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00d4ff;"></div>
+                <span>最小値</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let array = [];
+        let isSorting = false;
+        let isPaused = false;
+        let pauseResolve = null;
+        let abortController = null;
+        let currentAlgorithm = 'bubble';
+        let animationSpeed = 0.01;
+        let stats = {
+            comparisons: 0,
+            swaps: 0,
+            writes: 0,
+            startTime: 0
+        };
+
+        // DOM要素
+        const barContainer = document.getElementById('bar-container');
+        const arraySizeInput = document.getElementById('array-size');
+        const arraySizeValue = document.getElementById('array-size-value');
+        const algorithmSelect = document.getElementById('algorithm-select');
+        const speedSelect = document.getElementById('speed-select');
+        const arrayPatternSelect = document.getElementById('array-pattern');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const comparisonsDisplay = document.getElementById('comparisons');
+        const swapsDisplay = document.getElementById('swaps');
+        const writesDisplay = document.getElementById('writes');
+        const timeDisplay = document.getElementById('time');
+        const algorithmName = document.getElementById('algorithm-name');
+        const algorithmDescription = document.getElementById('algorithm-description');
+        const pivotLegendItem = document.getElementById('pivot-legend-item');
+        const loader = document.getElementById('loader');
+
+        // アルゴリズムごとの説明
+        const algorithmInfo = {
+            bubble: {
+                name: 'バブルソート (Bubble Sort)',
+                description: '隣り合う要素を比較し、大きいものを右に移動させる操作を繰り返すシンプルなアルゴリズム。<br>時間計算量: O(n²) | 空間計算量: O(1)'
+            },
+            selection: {
+                name: '選択ソート (Selection Sort)',
+                description: '未ソート部分から最小値を選んで正しい位置に置くことを繰り返すアルゴリズム。<br>時間計算量: O(n²) | 空間計算量: O(1)'
+            },
+            insertion: {
+                name: '挿入ソート (Insertion Sort)',
+                description: '未ソート部分の要素を既にソートされた部分に適切な位置を見つけて挿入するアルゴリズム。<br>時間計算量: O(n²) | 空間計算量: O(1)'
+            },
+            merge: {
+                name: 'マージソート (Merge Sort)',
+                description: '配列を半分に分割し、それぞれをソートしてマージする分割統治アルゴリズム。<br>時間計算量: O(n log n) | 空間計算量: O(n)'
+            },
+            quick: {
+                name: 'クイックソート (Quick Sort)',
+                description: 'ピボットを基準に配列を分割し、それぞれを再帰的にソートするアルゴリズム。<br>時間計算量: O(n log n) [平均] | 空間計算量: O(log n)'
+            },
+            heap: {
+                name: 'ヒープソート (Heap Sort)',
+                description: 'ヒープ構造を用いて要素を並び替えるアルゴリズム。最大値（または最小値）を順に取り出す。<br>時間計算量: O(n log n) | 空間計算量: O(1)'
+            }
+        };
+
+        // スリープ関数
+        function sleep(ms) {
+            return new Promise(resolve => {
+                const startTime = performance.now();
+                const checkTime = () => {
+                    if (performance.now() - startTime >= ms * animationSpeed) {
+                        resolve();
+                    } else {
+                        requestAnimationFrame(checkTime);
+                    }
+                };
+                requestAnimationFrame(checkTime);
+            });
+        }
+
+        async function wait(ms) {
+            if (isPaused) {
+                await new Promise(resolve => pauseResolve = resolve);
+            }
+            if (abortController && abortController.signal.aborted) {
+                throw new Error('Sorting aborted');
+            }
+            await new Promise(resolve => setTimeout(resolve, ms * animationSpeed));
+        }
+
+        // 配列を生成
+        function generateArray(size, pattern) {
+            const arr = [];
+            for (let i = 0; i < size; i++) {
+                arr.push(Math.floor(Math.random() * 500) + 10);
+            }
+
+            if (pattern === 'sorted') {
+                arr.sort((a, b) => a - b);
+                // 少しランダム性を加える
+                for (let i = 0; i < size / 2; i++) {
+                    const j = Math.floor(Math.random() * size);
+                    const k = Math.floor(Math.random() * size);
+                    [arr[j], arr[k]] = [arr[k], arr[j]];
+                }
+            } else if (pattern === 'reversed') {
+                arr.sort((a, b) => b - a);
+            }
+
+            return arr;
+        }
+
+        // バーを描画
+        function renderBars(indices = null, type = null, pivotIndex = null, minIndex = null) {
+            barContainer.innerHTML = '';
+
+            const maxValue = Math.max(...array);
+            const barWidth = Math.max(2, 800 / array.length - 2);
+
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${(value / 510) * 100}%`;
+                bar.style.width = `${barWidth}px`;
+
+                if (indices && indices.includes(index)) {
+                    if (type === 'comparing') {
+                        bar.classList.add('comparing');
+                    } else if (type === 'swapping') {
+                        bar.classList.add('swapping');
+                    }
+                }
+
+                if (pivotIndex === index) {
+                    bar.classList.add('pivot');
+                }
+
+                if (minIndex === index) {
+                    bar.classList.add('min');
+                }
+
+                if (index < array.length - stats.sortedCount) {
+                    bar.classList.add('sorted');
+                }
+
+                barContainer.appendChild(bar);
+            });
+        }
+
+        // バubbleソート (generator)
+        async function bubbleSort() {
+            resetStats();
+            const n = array.length;
+
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n - i - 1; j++) {
+                    checkPause();
+
+                    stats.comparisons++;
+                    comparisonsDisplay.textContent = stats.comparisons;
+
+                    renderBars([j, j + 1], 'comparing');
+
+                    await wait(100);
+
+                    if (array[j] > array[j + 1]) {
+                        stats.swaps++;
+                        stats.writes += 2;
+                        swapsDisplay.textContent = stats.swaps;
+                        writesDisplay.textContent = stats.writes;
+
+                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+
+                        renderBars([j, j + 1], 'swapping');
+
+                        await wait(100);
+                    }
+                }
+
+                stats.sortedCount++;
+                array[n - 1 - i] = { value: array[n - 1 - i], sorted: true };
+            }
+
+            renderBars(null, 'sorted');
+        }
+
+        // 選択ソート (generator)
+        async function selectionSort() {
+            resetStats();
+            const n = array.length;
+
+            for (let i = 0; i < n; i++) {
+                let minIndex = i;
+
+                for (let j = i; j < n; j++) {
+                    checkPause();
+
+                    stats.comparisons++;
+                    comparisonsDisplay.textContent = stats.comparisons;
+
+                    renderBars([minIndex, j], 'comparing', null, minIndex);
+
+                    await wait(100);
+
+                    if (array[j] < array[minIndex]) {
+                        minIndex = j;
+                    }
+                }
+
+                if (minIndex !== i) {
+                    stats.swaps++;
+                    stats.writes += 2;
+                    swapsDisplay.textContent = stats.swaps;
+                    writesDisplay.textContent = stats.writes;
+
+                    [array[i], array[minIndex]] = [array[minIndex], array[i]];
+
+                    renderBars([i, minIndex], 'swapping', null, i);
+
+                    await wait(100);
+                }
+
+                stats.sortedCount++;
+            }
+
+            renderBars(null, 'sorted');
+        }
+
+        // 挿入ソート (generator)
+        async function insertionSort() {
+            resetStats();
+            const n = array.length;
+
+            for (let i = 1; i < n; i++) {
+                let key = array[i];
+                let j = i - 1;
+
+                stats.writes++;
+                writesDisplay.textContent = stats.writes;
+
+                renderBars([i], 'swapping');
+
+                await wait(100);
+
+                while (j >= 0) {
+                    checkPause();
+
+                    stats.comparisons++;
+                    comparisonsDisplay.textContent = stats.comparisons;
+
+                    renderBars([j, j + 1], 'comparing');
+
+                    await wait(100);
+
+                    if (array[j] > key) {
+                        array[j + 1] = array[j];
+                        stats.writes++;
+                        writesDisplay.textContent = stats.writes;
+
+                        renderBars([j, j + 1], 'swapping');
+
+                        await wait(100);
+
+                        j--;
+                    } else {
+                        break;
+                    }
+                }
+
+                array[j + 1] = key;
+
+                stats.sortedCount++;
+            }
+
+            renderBars(null, 'sorted');
+        }
+
+        // マージソート
+        async function mergeSort() {
+            resetStats();
+            await mergeSortRecursive(0, array.length - 1);
+            renderBars(null, 'sorted');
+        }
+
+        async function mergeSortRecursive(left, right) {
+            if (left >= right) return;
+
+            const mid = Math.floor((left + right) / 2);
+
+            await mergeSortRecursive(left, mid);
+            await mergeSortRecursive(mid + 1, right);
+            await merge(left, mid, right);
+        }
+
+        async function merge(left, mid, right) {
+            const leftArr = array.slice(left, mid + 1);
+            const rightArr = array.slice(mid + 1, right + 1);
+
+            let i = 0, j = 0, k = left;
+
+            while (i < leftArr.length && j < rightArr.length) {
+                checkPause();
+
+                stats.comparisons++;
+                comparisonsDisplay.textContent = stats.comparisons;
+
+                renderBars([left + i, mid + 1 + j], 'comparing');
+
+                await wait(100);
+
+                if (leftArr[i] <= rightArr[j]) {
+                    array[k] = leftArr[i];
+                    i++;
+                } else {
+                    array[k] = rightArr[j];
+                    j++;
+                }
+
+                stats.writes++;
+                writesDisplay.textContent = stats.writes;
+
+                renderBars([k], 'swapping');
+
+                await wait(100);
+
+                k++;
+            }
+
+            while (i < leftArr.length) {
+                array[k] = leftArr[i];
+                stats.writes++;
+                writesDisplay.textContent = stats.writes;
+
+                renderBars([k], 'swapping');
+
+                await wait(100);
+
+                i++;
+                k++;
+            }
+
+            while (j < rightArr.length) {
+                array[k] = rightArr[j];
+                stats.writes++;
+                writesDisplay.textContent = stats.writes;
+
+                renderBars([k], 'swapping');
+
+                await wait(100);
+
+                j++;
+                k++;
+            }
+
+            // 範囲が確定したことを示す
+            for (let idx = left; idx <= right; idx++) {
+                // 確定済みマークは最後に一括でつけられる
+            }
+        }
+
+        // クイックソート
+        async function quickSort() {
+            resetStats();
+            await quickSortRecursive(0, array.length - 1);
+            renderBars(null, 'sorted');
+        }
+
+        async function quickSortRecursive(low, high) {
+            if (low < high) {
+                const pi = await partition(low, high);
+                await quickSortRecursive(low, pi - 1);
+                await quickSortRecursive(pi + 1, high);
+            }
+        }
+
+        async function partition(low, high) {
+            const pivot = array[high];
+            let i = low - 1;
+
+            renderBars([high], null, high);
+
+            await wait(100);
+
+            for (let j = low; j < high; j++) {
+                checkPause();
+
+                stats.comparisons++;
+                comparisonsDisplay.textContent = stats.comparisons;
+
+                renderBars([j, high], 'comparing', high);
+
+                await wait(100);
+
+                if (array[j] < pivot) {
+                    i++;
+                    if (i !== j) {
+                        stats.swaps++;
+                        stats.writes += 2;
+                        swapsDisplay.textContent = stats.swaps;
+                        writesDisplay.textContent = stats.writes;
+
+                        [array[i], array[j]] = [array[j], array[i]];
+
+                        renderBars([i, j], 'swapping', high);
+
+                        await wait(100);
+                    }
+                }
+            }
+
+            if (i + 1 !== high) {
+                stats.swaps++;
+                stats.writes += 2;
+                swapsDisplay.textContent = stats.swaps;
+                writesDisplay.textContent = stats.writes;
+
+                [array[i + 1], array[high]] = [array[high], array[i + 1]];
+
+                renderBars([i + 1, high], 'swapping', high);
+
+                await wait(100);
+            }
+
+            return i + 1;
+        }
+
+        // ヒープソート
+        async function heapSort() {
+            resetStats();
+            const n = array.length;
+
+            // ヒープ構築
+            for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+                await heapify(n, i);
+            }
+
+            // 一つずつ要素を取り出す
+            for (let i = n - 1; i > 0; i--) {
+                checkPause();
+
+                stats.swaps++;
+                stats.writes += 2;
+                swapsDisplay.textContent = stats.swaps;
+                writesDisplay.textContent = stats.writes;
+
+                [array[0], array[i]] = [array[i], array[0]];
+
+                renderBars([0, i], 'swapping');
+
+                await wait(100);
+
+                await heapify(i, 0);
+            }
+
+            renderBars(null, 'sorted');
+        }
+
+        async function heapify(n, i) {
+            let largest = i;
+            const left = 2 * i + 1;
+            const right = 2 * i + 2;
+
+            if (left < n) {
+                stats.comparisons++;
+                comparisonsDisplay.textContent = stats.comparisons;
+
+                renderBars([largest, left], 'comparing');
+
+                await wait(100);
+
+                if (array[left] > array[largest]) {
+                    largest = left;
+                }
+            }
+
+            if (right < n) {
+                stats.comparisons++;
+                comparisonsDisplay.textContent = stats.comparisons;
+
+                renderBars([largest, right], 'comparing');
+
+                await wait(100);
+
+                if (array[right] > array[largest]) {
+                    largest = right;
+                }
+            }
+
+            if (largest !== i) {
+                stats.swaps++;
+                stats.writes += 2;
+                swapsDisplay.textContent = stats.swaps;
+                writesDisplay.textContent = stats.writes;
+
+                [array[i], array[largest]] = [array[largest], array[i]];
+
+                renderBars([i, largest], 'swapping');
+
+                await wait(100);
+
+                await heapify(n, largest);
+            }
+        }
+
+        // 統計リセット
+        function resetStats() {
+            stats = {
+                comparisons: 0,
+                swaps: 0,
+                writes: 0,
+                startTime: performance.now(),
+                sortedCount: 0
+            };
+            comparisonsDisplay.textContent = '0';
+            swapsDisplay.textContent = '0';
+            writesDisplay.textContent = '0';
+            timeDisplay.textContent = '0 ms';
+        }
+
+        // 一時停止チェック
+        function checkPause() {
+            if (isPaused) {
+                return new Promise(resolve => {
+                    pauseResolve = resolve;
+                });
+            }
+            if (abortController && abortController.signal.aborted) {
+                throw new Error('Sorting aborted');
+            }
+        }
+
+        // ソート実行
+        async function startSorting() {
+            if (isSorting) return;
+
+            isSorting = true;
+            isPaused = false;
+            abortController = new AbortController();
+
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            resetBtn.disabled = true;
+            algorithmSelect.disabled = true;
+            arraySizeInput.disabled = true;
+            arrayPatternSelect.disabled = true;
+
+            const startTime = performance.now();
+
+            try {
+                switch (currentAlgorithm) {
+                    case 'bubble':
+                        await bubbleSort();
+                        break;
+                    case 'selection':
+                        await selectionSort();
+                        break;
+                    case 'insertion':
+                        await insertionSort();
+                        break;
+                    case 'merge':
+                        await mergeSort();
+                        break;
+                    case 'quick':
+                        await quickSort();
+                        break;
+                    case 'heap':
+                        await heapSort();
+                        break;
+                }
+
+                const endTime = performance.now();
+                timeDisplay.textContent = `${Math.floor(endTime - startTime)} ms`;
+                timeDisplay.classList.add('sorted');
+
+                await wait(200);
+            } catch (e) {
+                console.log('Sorting cancelled:', e);
+            } finally {
+                isSorting = false;
+                isPaused = false;
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                pauseBtn.textContent = '一時停止';
+                resetBtn.disabled = false;
+                algorithmSelect.disabled = false;
+                arraySizeInput.disabled = false;
+                arrayPatternSelect.disabled = false;
+                loader.classList.remove('active');
+            }
+        }
+
+        // 一時停止/再開
+        function togglePause() {
+            if (!isSorting) return;
+
+            isPaused = !isPaused;
+
+            if (isPaused) {
+                pauseBtn.textContent = '再開';
+                loader.classList.add('active');
+                loader.querySelector('.loader-text').textContent = '一時停止中...';
+            } else {
+                pauseBtn.textContent = '一時停止';
+                loader.classList.remove('active');
+                if (pauseResolve) {
+                    pauseResolve();
+                    pauseResolve = null;
+                }
+            }
+        }
+
+        // リセット
+        function reset() {
+            if (isSorting) {
+                if (abortController) {
+                    abortController.abort();
+                }
+                isSorting = false;
+            }
+
+            isPaused = false;
+            if (pauseResolve) {
+                pauseResolve();
+                pauseResolve = null;
+            }
+
+            arraySizeInput.disabled = false;
+            arrayPatternSelect.disabled = false;
+
+            const size = parseInt(arraySizeInput.value);
+            const pattern = arrayPatternSelect.value;
+
+            array = generateArray(size, pattern);
+            stats.sortedCount = 0;
+
+            renderBars();
+            resetStats();
+        }
+
+        // イベントリスナー
+        arraySizeInput.addEventListener('input', (e) => {
+            arraySizeValue.textContent = e.target.value;
+        });
+
+        algorithmSelect.addEventListener('change', (e) => {
+            currentAlgorithm = e.target.value;
+            const info = algorithmInfo[currentAlgorithm];
+            algorithmName.innerHTML = info.name;
+            algorithmDescription.innerHTML = info.description;
+        });
+
+        speedSelect.addEventListener('change', (e) => {
+            animationSpeed = parseFloat(e.target.value);
+        });
+
+        startBtn.addEventListener('click', startSorting);
+
+        pauseBtn.addEventListener('click', togglePause);
+
+        resetBtn.addEventListener('click', () => {
+            reset();
+            arraySizeInput.disabled = false;
+            arrayPatternSelect.disabled = false;
+        });
+
+        arraySizeInput.addEventListener('change', () => {
+            if (!isSorting) {
+                reset();
+            }
+        });
+
+        arrayPatternSelect.addEventListener('change', () => {
+            if (!isSorting) {
+                reset();
+            }
+        });
+
+        // 初期化
+        function init() {
+            array = generateArray(parseInt(arraySizeInput.value), arrayPatternSelect.value);
+            renderBars();
+            resetStats();
+        }
+
+        init();
+    </script>
+</body>
+</html>

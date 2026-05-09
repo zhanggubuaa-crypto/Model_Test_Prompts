@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanban Board - タスク管理</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/dark-theme.css" id="dark-theme">
+  <link rel="stylesheet" href="styles/animations.css">
+  <script src="scripts/storage.js"></script>
+  <script src="scripts/app.js" defer></script>
+</head>
+<body class="light-theme">
+  <!-- ヘッダー -->
+  <header class="header">
+    <div class="header-left">
+      <h1 class="board-title">My Kanban</h1>
+      <div class="board-selector">
+        <select id="board-select" class="board-select"></select>
+        <button id="new-board-btn" class="btn-icon" title="新しいボード">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+        <button id="delete-board-btn" class="btn-icon btn-danger" title="ボードを削除">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="header-right">
+      <button id="theme-toggle" class="btn-icon" title="テーマ切替">
+        <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <div class="search-container">
+        <input type="text" id="search-input" class="search-input" placeholder="検索 (/)..." aria-label="検索">
+      </div>
+      <button id="clear-filters-btn" class="btn-secondary btn-sm" title="フィルターをクリア">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+      <button id="undo-btn" class="btn-secondary btn-sm" title="アンドゥ">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 7v6h6"></path>
+          <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+        </svg>
+      </button>
+      <button id="redo-btn" class="btn-secondary btn-sm" title="リドゥ">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 7v6h-6"></path>
+          <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"></path>
+        </svg>
+      </button>
+      <button id="export-btn" class="btn-secondary btn-sm" title="エクスポート">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+      </button>
+      <button id="import-btn" class="btn-secondary btn-sm" title="インポート">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- フィルターコントロール -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label class="filter-label">優先度:</label>
+      <div class="filter-chips" id="priority-filters">
+        <button class="filter-chip" data-filter="priority" data-value="all" data-label="すべて">すべて</button>
+        <button class="filter-chip filter-urgent" data-filter="priority" data-value="urgent" data-label="緊急">緊急</button>
+        <button class="filter-chip filter-high" data-filter="priority" data-value="high" data-label="高">高</button>
+        <button class="filter-chip filter-medium" data-filter="priority" data-value="medium" data-label="中">中</button>
+        <button class="filter-chip filter-low" data-filter="priority" data-value="low" data-label="低">低</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">期日:</label>
+      <div class="filter-chips" id="date-filters">
+        <button class="filter-chip" data-filter="date" data-value="all" data-label="すべて">すべて</button>
+        <button class="filter-chip" data-filter="date" data-value="today" data-label="今日">今日</button>
+        <button class="filter-chip" data-filter="date" data-value="week" data-label="今週">今週</button>
+        <button class="filter-chip" data-filter="date" data-value="overdue" data-label="期限切れ">期限切れ</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">タグ:</label>
+      <div class="filter-chips" id="tag-filters">
+        <button class="filter-chip" data-filter="tag" data-value="all" data-label="すべて">すべて</button>
+        <!-- タグがここに動的に追加される -->
+      </div>
+    </div>
+    <div class="filter-group">
+      <button type="button" class="btn-small" id="add-column-btn">+ カラム追加</button>
+    </div>
+  </div>
+
+  <!-- カンバンボード -->
+  <main class="kanban-board" id="kanban-board">
+    <!-- カラムはJavaScriptで動的に生成 -->
+  </main>
+
+  <!-- 新規カードモーダル -->
+  <div id="new-card-modal" class="modal">
+    <div class="modal-overlay" data-close="new-card-modal"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>新規カード</h2>
+        <button class="btn-close" data-close="new-card-modal" aria-label="閉じる">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="new-card-form">
+          <div class="form-group">
+            <label class="form-label" for="card-title">タイトル <span class="required">*</span></label>
+            <input type="text" id="card-title" class="form-input" placeholder="カードのタイトル" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="card-description">説明</label>
+            <textarea id="card-description" class="form-input form-textarea" placeholder="詳細な説明を入力 (Markdown対応)"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="card-due-date">期日</label>
+              <input type="date" id="card-due-date" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="card-priority">優先度</label>
+              <select id="card-priority" class="form-input">
+                <option value="low">低</option>
+                <option value="medium">中</option>
+                <option value="high" selected>高</option>
+                <option value="urgent">緊急</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="card-tags">タグ (カンマ区切り)</label>
+            <input type="text" id="card-tags" class="form-input" placeholder="tag1, tag2, tag3">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="card-assignee">担当者</label>
+            <input type="text" id="card-assignee" class="form-input" placeholder="担当者の名前">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" data-close="new-card-modal">キャンセル</button>
+            <button type="submit" class="btn-primary">追加</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 編集モーダル -->
+  <div id="edit-card-modal" class="modal">
+    <div class="modal-overlay" data-close="edit-card-modal"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>カード編集</h2>
+        <button class="btn-close" data-close="edit-card-modal" aria-label="閉じる">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-card-form">
+          <input type="hidden" id="edit-card-id">
+          <div class="form-group">
+            <label class="form-label" for="edit-card-title">タイトル <span class="required">*</span></label>
+            <input type="text" id="edit-card-title" class="form-input" placeholder="カードのタイトル" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-card-description">説明</label>
+            <textarea id="edit-card-description" class="form-input form-textarea" placeholder="詳細な説明を入力 (Markdown対応)"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="edit-card-due-date">期日</label>
+              <input type="date" id="edit-card-due-date" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-card-priority">優先度</label>
+              <select id="edit-card-priority" class="form-input">
+                <option value="low">低</option>
+                <option value="medium">中</option>
+                <option value="high">高</option>
+                <option value="urgent">緊急</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-card-tags">タグ (カンマ区切り)</label>
+            <input type="text" id="edit-card-tags" class="form-input" placeholder="tag1, tag2, tag3">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-card-assignee">担当者</label>
+            <input type="text" id="edit-card-assignee" class="form-input" placeholder="担当者の名前">
+          </div>
+          <div class="form-group">
+            <label class="form-label">チェックリスト</label>
+            <div id="edit-checklist" class="checklist-container">
+              <!-- チェックリストアイテムがここに追加される -->
+            </div>
+            <div class="checklist-actions">
+              <button type="button" class="btn-small" id="add-checklist-item">+ 項目を追加</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">コメント</label>
+            <div class="form-row">
+              <div class="form-group">
+                <input type="text" id="new-comment" class="form-input" placeholder="コメントを入力...">
+              </div>
+              <button type="button" class="btn-primary" id="add-comment-btn" style="width: auto; padding: 8px 16px;">追加</button>
+            </div>
+            <div id="edit-comments" class="checklist-container" style="max-height: 100px; margin-top: 8px;">
+              <!-- コメントがここに表示される -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-danger" id="delete-card-btn">削除</button>
+            <button type="button" class="btn-secondary" id="archive-card-btn">アーカイブ</button>
+            <button type="button" class="btn-secondary" data-close="edit-card-modal">キャンセル</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- インポートモーダル -->
+  <div id="import-modal" class="modal">
+    <div class="modal-overlay" data-close="import-modal"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>インポート</h2>
+        <button class="btn-close" data-close="import-modal" aria-label="閉じる">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">JSONファイルを選択</label>
+          <input type="file" id="import-file-input" class="form-input" accept=".json">
+        </div>
+        <div class="form-group">
+          <label class="form-label">またはJSONテキストを貼り付け</label>
+          <textarea id="import-textarea" class="form-input form-textarea" placeholder='{"boards": {...}, "activeBoard": "..."}'></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close="import-modal">キャンセル</button>
+          <button type="button" class="btn-primary" id="import-confirm-btn">インポート</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 検索結果ポップオーバー -->
+  <div id="search-results" class="search-results">
+    <!-- 検索結果がここに表示される -->
+  </div>
+
+  <!-- キーボードショートカットヘルプ -->
+  <div class="keyboard-shortcuts" id="shortcuts-help">
+    <h4>キーボードショートカット</h4>
+    <ul>
+      <li><kbd>N</kbd> 新規カード</li>
+      <li><kbd>/</kbd> 検索フォーカス</li>
+      <li><kbd>Esc</kbd> モーダル閉じる</li>
+    </ul>
+  </div>
+</body>
+</html>

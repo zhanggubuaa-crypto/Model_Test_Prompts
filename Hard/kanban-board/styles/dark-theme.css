@@ -1,0 +1,251 @@
+/* =========================================
+   ダークテーマスタイル
+   ========================================= */
+
+/* ダークテーマ用CSS変数 */
+body.dark-theme {
+  --bg-primary: #172b4d;
+  --bg-secondary: #1e3a5f;
+  --bg-tertiary: #253d61;
+  --bg-hover: #364b6f;
+  --border-color: #3b5998;
+  --text-primary: #ffffff;
+  --text-secondary: #c7d2db;
+  --text-tertiary: #8b96a2;
+  --accent-color: #0079bf;
+  --accent-hover: #026aa7;
+  --danger-color: #f25f4c;
+  --urgent-color: #f25f4c;
+  --high-color: #eeb534;
+  --medium-color: #70c4be;
+  --low-color: #54a2ff;
+}
+
+/* ヘッダー */
+body.dark-theme .header {
+  background-color: var(--bg-secondary);
+  border-bottom-color: var(--border-color);
+}
+
+/* フィルターバー */
+body.dark-theme .filter-bar {
+  background-color: var(--bg-secondary);
+  border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .filter-label {
+  color: var(--text-secondary);
+}
+
+body.dark-theme .filter-chip {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+body.dark-theme .filter-chip:hover {
+  background-color: var(--bg-hover);
+}
+
+body.dark-theme .filter-chip.active {
+  color: white;
+}
+
+/* ボード */
+body.dark-theme .kanban-board {
+  background-color: var(--bg-primary);
+}
+
+body.dark-theme .board-column {
+  background-color: var(--bg-tertiary);
+}
+
+/* ヘッダー */
+body.dark-theme .column-header {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .column-footer {
+  border-top-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .column-footer:hover {
+  background-color: var(--bg-hover);
+}
+
+/* カード */
+body.dark-theme .card {
+  background-color: var(--bg-secondary);
+  border-left-color: var(--urgent-color);
+}
+
+body.dark-theme .card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .card.dragging {
+  opacity: 0.6;
+}
+
+body.dark-theme .card-assignee {
+  color: var(--text-secondary);
+}
+
+/* モーダル */
+body.dark-theme .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+body.dark-theme .modal-content {
+  background-color: var(--bg-secondary);
+}
+
+body.dark-theme .modal-header {
+  border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .modal-footer {
+  background-color: var(--bg-tertiary);
+  border-top-color: var(--border-color);
+}
+
+/* フォーム */
+body.dark-theme .form-label {
+  color: var(--text-primary);
+}
+
+body.dark-theme .form-input {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+body.dark-theme .form-input:focus {
+  background-color: var(--bg-secondary);
+}
+
+body.dark-theme .form-textarea {
+  color: var(--text-primary);
+}
+
+body.dark-theme .checklist-container {
+  border-color: var(--border-color);
+}
+
+body.dark-theme .checklist-item {
+  border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .checklist-item-text {
+  color: var(--text-primary);
+}
+
+body.dark-theme .card-meta-item {
+  color: var(--text-secondary);
+}
+
+body.dark-theme .card-checklist {
+  color: var(--text-secondary);
+}
+
+body.dark-theme .card-checklist .checklist-progress {
+  color: var(--text-primary);
+}
+
+body.dark-theme .card-tag {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+body.dark-theme .card-content {
+  color: var(--text-secondary);
+}
+
+body.dark-theme .card-content.markdown code {
+  background-color: var(--bg-tertiary);
+  color: var(--urgent-color);
+}
+
+body.dark-theme .card-content.markdown pre {
+  background-color: var(--bg-primary);
+}
+
+body.dark-theme .card-content.markdown blockquote {
+  border-left-color: var(--border-color);
+}
+
+body.dark-theme .search-input {
+  background-color: var(--bg-secondary);
+}
+
+body.dark-theme .search-results {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+body.dark-theme .search-results .result-item {
+  border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .search-results .result-title {
+  color: var(--text-primary);
+}
+
+body.dark-theme .search-results .result-meta {
+  color: var(--text-secondary);
+}
+
+body.dark-theme .btn-secondary {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+body.dark-theme .btn-secondary:hover {
+  background-color: var(--bg-hover);
+}
+
+body.dark-theme .card-actions .btn-icon:hover {
+  background-color: var(--bg-hover);
+}
+
+/* キーボードショートカット */
+body.dark-theme .keyboard-shortcuts {
+  background-color: var(--bg-secondary);
+}
+
+body.dark-theme .keyboard-shortcuts h4 {
+  color: var(--text-primary);
+}
+
+body.dark-theme .keyboard-shortcuts li {
+  color: var(--text-secondary);
+  border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .keyboard-shortcuts kbd {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* フォーカス状態 */
+body.dark-theme .board-select:focus {
+  box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.4);
+}
+
+body.dark-theme .search-input:focus {
+  box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.4);
+}
+
+body.dark-theme .form-input:focus {
+  box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.4);
+}
+
+/* リンク */
+body.dark-theme .card-content.markdown a {
+  color: #63c9f0;
+}
+
+body.dark-theme .card-content.markdown a:hover {
+  color: #95d5f7;
+}
